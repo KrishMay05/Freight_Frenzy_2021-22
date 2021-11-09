@@ -10,9 +10,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 @TeleOp(name="Mecanum_Control_V2", group="Testier")
 public class MecanumControlV2 extends OpMode {
-/*
-This entire program acts like a psuedo-main class, Put all code during TeleOp in this class. 
-*/
+
     MecanumDrive robot    = new MecanumDrive();
 //    Motors shooter       = new Motors();
 //    Intake  intake        = new Intake();
