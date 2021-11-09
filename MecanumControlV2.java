@@ -7,6 +7,9 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
+/*
+This entire program acts like a psuedo-main class, Put all code during TeleOp in this class. 
+*/
 
 @TeleOp(name="Mecanum_Control_V2", group="Testier")
 public class MecanumControlV2 extends OpMode {
