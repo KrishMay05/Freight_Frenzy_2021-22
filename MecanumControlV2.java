@@ -1,224 +1,139 @@
-package org.firstinspires.ftc.teamcode;
+/* Copyright (c) 2017 FIRST. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted (subject to the limitations in the disclaimer below) provided that
+ * the following conditions are met:
+ *
+ * Redistributions of source code must retain the above copyright notice, this list
+ * of conditions and the following disclaimer.
+ *
+ * Redistributions in binary form must reproduce the above copyright notice, this
+ * list of conditions and the following disclaimer in the documentation and/or
+ * other materials provided with the distribution.
+ *
+ * Neither the name of FIRST nor the names of its contributors may be used to endorse or
+ * promote products derived from this software without specific prior written permission.
+ *
+ * NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY THIS
+ * LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
-import android.widget.Spinner;
+package org.firstinspires.ftc.robotcontroller.external.samples;
 
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
-/*
-This entire program acts like a psuedo-main class, Put all code during TeleOp in this class. 
-*/
+import com.qualcomm.robotcore.util.Range;
 
-@TeleOp(name="Mecanum_Control_V2", group="Testier")
-public class MecanumControlV2 extends OpMode {
+/**
+ * This file contains an example of an iterative (Non-Linear) "OpMode".
+ * An OpMode is a 'program' that runs in either the autonomous or the teleop period of an FTC match.
+ * The names of OpModes appear on the menu of the FTC Driver Station.
+ * When an selection is made from the menu, the corresponding OpMode
+ * class is instantiated on the Robot Controller and executed.
+ *
+ * This particular OpMode just executes a basic Tank Drive Teleop for a two wheeled robot
+ * It includes all the skeletal structure that all iterative OpModes contain.
+ *
+ * Use Android Studios to Copy this Class, and Paste it into your team's code folder with a new name.
+ * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
+ */
 
-    MecanumDrive robot    = new MecanumDrive();
-//    Motors shooter       = new Motors();
-//    Intake  intake        = new Intake();
-    Servos spinny = new Servos();
-    MotorControl Motor = new MotorControl();
+@TeleOp(name="Basic: Iterative OpMode", group="Iterative Opmode")
+@Disabled
+public class BasicOpMode_Iterative extends OpMode
+{
+    // Declare OpMode members.
+    private ElapsedTime runtime = new ElapsedTime();
+    private DcMotor leftDrive = null;
+    private DcMotor rightDrive = null;
 
-    double driveSpeed;
-    double turnSpeed;
-    double direction;
-    double shooterPower = -1;
-
-    boolean isSpinnerOn  = false;
-    boolean isSpinnerOf = true;
-    boolean isIntakeOn  = false;
-    boolean isIntakeOf = true;
-    boolean wasPowerIncreased;
-    boolean wasPowerDecreased;
-    double spinnerChange = .07;//5 increments of change in power of shooter, with given code at bottom(Lower=-1;Upper=-.65)
-
-    boolean highGoalMode = true;
-    boolean powerShotMode = false;
-
-    boolean autoPower = true;
-    boolean manualPower = false;
-
-//    private ElapsedTime period  = new ElapsedTime();
-//    private double runtime = 0;
-
+    /*
+     * Code to run ONCE when the driver hits INIT
+     */
     @Override
     public void init() {
-        robot.init(hardwareMap);
-        Motor.init(hardwareMap);
-        spinny.init(hardwareMap);
-//        grabber.init(hardwareMap);
+        telemetry.addData("Status", "Initialized");
 
-        msStuckDetectInit = 18000;
-        msStuckDetectLoop = 18000;
+        // Initialize the hardware variables. Note that the strings used here as parameters
+        // to 'get' must correspond to the names assigned during the robot configuration
+        // step (using the FTC Robot Controller app on the phone).
+        leftDrive  = hardwareMap.get(DcMotor.class, "left_drive");
+        rightDrive = hardwareMap.get(DcMotor.class, "right_drive");
 
-        telemetry.addData("Hello","be ready");
-        telemetry.addData("Loop_Timeout",msStuckDetectLoop);
-        telemetry.update();
+        // Most robots need the motor on one side to be reversed to drive forward
+        // Reverse the motor that runs backwards when connected directly to the battery
+        leftDrive.setDirection(DcMotor.Direction.FORWARD);
+        rightDrive.setDirection(DcMotor.Direction.REVERSE);
+
+        // Tell the driver that initialization is complete.
+        telemetry.addData("Status", "Initialized");
     }
+
+    /*
+     * Code to run REPEATEDLY after the driver hits INIT, but before they hit PLAY
+     */
+    @Override
+    public void init_loop() {
+    }
+
+    /*
+     * Code to run ONCE when the driver hits PLAY
+     */
+    @Override
+    public void start() {
+        runtime.reset();
+    }
+
+    /*
+     * Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
+     */
     @Override
     public void loop() {
-        telemetry.addData("isSpinnerOn", isSpinnerOn);
-        telemetry.addData("highGoalMode", highGoalMode);
-        telemetry.addData("Automatic Power", autoPower);
-        telemetry.addData("Spinner Power", Motor.rotaterPower());
-        telemetry.addData("Intake Power", Motor.intakeOnePower());
-        //telemetry.addData("Drive Speed",driveSpeed);
-        //telemetry.addData("Direction",direction);
-        //telemetry.addData("Turn Speed", turnSpeed);
-        //telemetry.addData("LB",robot.getLBencoder());
-        //telemetry.addData("RB",robot.getRBencoder());
-        //telemetry.addData("LF",robot.getLFencoder());
-        //telemetry.addData("RF",robot.getRFencoder());
-        telemetry.update();
+        // Setup a variable for each drive wheel to save power level for telemetry
+        double leftPower;
+        double rightPower;
 
-        //Speed control (turbo/slow mode) and direction of stick calculation
-        if (gamepad1.left_bumper) {
-            driveSpeed = Math.hypot(-gamepad1.left_stick_x, -gamepad1.left_stick_y);
-            direction = Math.atan2(gamepad1.left_stick_y, -gamepad1.left_stick_x) - Math.PI / 4;
-            turnSpeed = gamepad1.right_stick_x;
-        }else if (gamepad1.right_bumper) {
-            driveSpeed = Math.hypot(-gamepad1.left_stick_x, -gamepad1.left_stick_y)*.4;
-            direction = Math.atan2(gamepad1.left_stick_y, -gamepad1.left_stick_x) - Math.PI / 4;
-            turnSpeed = gamepad1.right_stick_x*.4;
-        }else {
-            driveSpeed = Math.hypot(-gamepad1.left_stick_x, -gamepad1.left_stick_y)*.7;
-            direction = Math.atan2(gamepad1.left_stick_y, -gamepad1.left_stick_x) - Math.PI / 4;
-            turnSpeed = gamepad1.right_stick_x*.7;
-        }
-        //set power and direction of drive motors
-        if (turnSpeed == 0) {
-            robot.MecanumController(driveSpeed,direction,0);
-        }
+        // Choose to drive using either Tank Mode, or POV Mode
+        // Comment out the method that's not used.  The default below is POV.
 
-        //control of turning
-        if (gamepad1.right_stick_x != 0 && driveSpeed == 0) {
-            robot.leftFront.setPower(-turnSpeed);
-            robot.leftBack.setPower(-turnSpeed);
-            robot.rightFront.setPower(turnSpeed);
-            robot.rightBack.setPower(turnSpeed);
-        }
+        // POV Mode uses left stick to go forward, and right stick to turn.
+        // - This uses basic math to combine motions and is easier to drive straight.
+        double drive = -gamepad1.left_stick_y;
+        double turn  =  gamepad1.right_stick_x;
+        leftPower    = Range.clip(drive + turn, -1.0, 1.0) ;
+        rightPower   = Range.clip(drive - turn, -1.0, 1.0) ;
 
-        //Turn Output on
-        if (gamepad2.a && !isSpinnerOn) {
-            isSpinnerOn = true;
-        }else if (!gamepad2.a && isSpinnerOn) {
-            isSpinnerOf = false;
-        }
-        //Turn Output off
-        if (gamepad2.a && !isSpinnerOf) {
-            isSpinnerOn = false;
-        }else if (!gamepad2.a && !isSpinnerOn) {
-            isSpinnerOf = true;
-        }
+        // Tank Mode uses one stick to control each wheel.
+        // - This requires no math, but it is hard to drive forward slowly and keep straight.
+        // leftPower  = -gamepad1.left_stick_y ;
+        // rightPower = -gamepad1.right_stick_y ;
 
+        // Send calculated power to wheels
+        leftDrive.setPower(leftPower);
+        rightDrive.setPower(rightPower);
 
-        //Turn Intake on
-        if (gamepad1.a && !isIntakeOn) {
-            isIntakeOn = true;
-        }else if (!gamepad2.a && isIntakeOn) {
-            isIntakeOf = false;
-        }
-        //Turn Intake off
-        if (gamepad1.a && !isIntakeOf) {
-            isIntakeOn = false;
-        }else if (!gamepad1.a && !isIntakeOn) {
-            isIntakeOf = true;
-        }
-        //Motors into PowerShot mode
-//        if (gamepad2.b && !powerShotMode) {
-//            powerShotMode = true;
-//        }else if (!gamepad2.b && powerShotMode) {
-//            highGoalMode = false;
-//        }
-//        //Motors into HighGoal mode
-//        if (gamepad2.b && !highGoalMode) {
-//            powerShotMode = false;
-//        }else if (!gamepad2.b && !powerShotMode) {
-//            highGoalMode = true;
-//        }
-//        //Motors into Manual mode
-//        if (gamepad2.x && !manualPower) {
-//            manualPower = true;
-//        }else if (!gamepad2.x && manualPower) {
-//            autoPower = false;
-//        }
-//        //Motors into Automatic mode
-//        if (gamepad2.x && !autoPower) {
-//            manualPower = false;
-//        }else if (!gamepad2.x && !manualPower) {
-//            autoPower = true;
-//        }
-
-        //Set Power of the intake
-
-        if(isIntakeOn){
-            Motor.intakeOnePower(.5);
-        }
-        else{
-            Motor.intakeOnePower(0);
-        }
-
-        //Set power of the output
-
-        if (isSpinnerOn) {
-            if (isSpinnerOn) {
-                Motor.rotaterPower(shooterPower);
-            } else {
-                Motor.rotaterPower(0);
-            }
-
-            } else {
-                Motor.rotaterPower(0);
-            }
-
-            //Change shooter power
-            if (gamepad2.dpad_up) {
-                wasPowerIncreased = true;
-        }else if (!gamepad2.dpad_up && wasPowerIncreased) {
-            shooterPower -= spinnerChange;
-            if (shooterPower <= -1.01) {
-                shooterPower = -.65;
-            }
-            wasPowerIncreased = false;
-        }
-        if (gamepad2.dpad_down) {
-            wasPowerDecreased = true;
-        }else if (!gamepad2.dpad_down && wasPowerDecreased) {
-            shooterPower += spinnerChange;
-            if (shooterPower >= -.62) {
-                shooterPower = -1;
-            }
-            wasPowerDecreased = false;
-        }
-
-        //Control intake
-//        intake.intakePower(-gamepad2.left_stick_y);
-
-        //Control shooter servo
-//        if (gamepad2.left_bumper) {
-//            shooter.shooterSwitch.setPosition(.63);
-//        }else {
-//            shooter.shooterSwitch.setPosition(1);
-//        }
-
-        //Control Output Servos, initial middle and final positions
-        if (gamepad2.x) {
-            spinny.Output.setPosition(0);
-        }
-        else if(gamepad2.y){
-            spinny.Output.setPosition(.55);
-        }
-        else if (gamepad2.b) {
-            spinny.Output.setPosition(.85);
-        }
-
-        //Control grabber servo
-//        if (gamepad1.b) {
-//            spinny.gripperPosition(.77);
-
-//        }else if (gamepad1.dpad_up) {
-//            spinny.gripperPosition(0);
-//        }
+        // Show the elapsed game time and wheel power.
+        telemetry.addData("Status", "Run Time: " + runtime.toString());
+        telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
     }
+
+    /*
+     * Code to run ONCE after the driver hits STOP
+     */
+    @Override
+    public void stop() {
+    }
+
 }
