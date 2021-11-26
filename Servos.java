@@ -8,7 +8,7 @@ public class Servos {
     //This class will include methods for opening and closing gripper & moving the arm up and down
 
     /*Public OpMode Members.*/
-    public Servo Output = null;
+    public Servo Output = null; // Reece's box
 //    public Servo gripWrist  = null;
 //    public Servo gripServo = null;
 
