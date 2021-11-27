@@ -1,0 +1,45 @@
+package org.firstinspires.ftc.teamcode;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.util.ElapsedTime;
+//@Disabled
+//@Autonomous(name="Test for Basics", group="Competition")
+public class AutonTest extends OpMode{
+    MecanumDrive robot = new MecanumDrive();
+    Intake intake = new Intake();
+    MotorControl motor = new MotorControl();
+    Servos servo = new Servos();
+
+    private int stateMachineFlow;
+    private double waitTime;
+    private ElapsedTime runtime = new ElapsedTime();
+
+
+    @Override
+    // Does this on initial start up of program
+    public void init() {
+        msStuckDetectInit = 11500;
+        msStuckDetectLoop = 10000;
+
+        //Maps all the variables to the correct corresponding  hardware part on the robot
+        robot.init(hardwareMap);
+        intake.init(hardwareMap);
+        motor.init(hardwareMap);
+        servo.init(hardwareMap);
+
+        stateMachineFlow = 0;//used to iterate through the switch loop
+    }
+
+    // Does this after start up, actual code and movement of BOT
+    @Override
+    public void loop() {
+        switch(stateMachineFlow) {
+            case 0:
+                robot.frontLinearDrive(.45,-85);
+                stateMachineFlow++;
+                break;
+        }
+    }
+
+}
