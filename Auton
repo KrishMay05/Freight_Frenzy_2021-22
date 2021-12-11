@@ -36,8 +36,35 @@ public class AutonTest extends OpMode{
     public void loop() {
         switch(stateMachineFlow) {
             case 0:
-                robot.frontLinearDrive(.45,-85);
+                robot.sideDrive(.45,-15);
+                robot.frontLinearDrive(.45,-15);
                 stateMachineFlow++;
+                break;
+            case 1:
+                stateMachineFlow++;
+                break;
+            case 2:
+//                robot.sideDrive(.45,-50);
+//                robot.frontLinearDrive(.45,7);
+                robot.frontLinearDrive(.45,55);
+                robot.resetAngle();
+                robot.rotate(180,30);
+                stateMachineFlow++;
+                break;
+            case 3:
+                robot.sideDrive(.45,50);
+//                robot.frontLinearDrive(.45,-55);
+                stateMachineFlow++;
+                break;
+            case 4:
+                runtime.reset();
+                motor.rotaterPower(30);
+                while(3>runtime.time()){}
+                motor.rotaterPower(0);
+                stateMachineFlow++;
+                break;
+            case 5:
+                robot.sideDrive(.45,100);
                 break;
         }
     }
