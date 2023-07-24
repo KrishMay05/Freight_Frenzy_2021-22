@@ -6,8 +6,8 @@ Auton: Multiple different cases where the robot performs different tasks without
 
 MecanumControlV2: Allows for user control of all the motors and servos using custom classes which make motor movement intuitive and easy to control with a Logitech controller 
 
-MecanumDrive: Maps all the drive motors to the correct ports on the control hub
+MecanumDrive: Maps all the drive motors to the correct ports on the control hub and set the initial values (current position, etc.)
 
-MotorControl: Map all the extra attachment motors to the correct ports on the control hub
+MotorControl: Map all the extra attachment motors to the correct ports on the control hub and set the initial values (current position, etc.)
 
-Servos: Maps all the servos to the correct ports on the control hub
+Servos: Maps all the servos to the correct ports on the control hub and set the initial values (current position, etc.)
